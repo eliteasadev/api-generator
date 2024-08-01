@@ -25,15 +25,21 @@ const api_methods = [
 ];
 
 export default function Home() {
-
-
   return (
     <div className="p-4 flex flex-col items-center justify-center">
       <nav className="flex items-center justify-between mb-4 w-full">
         <h1 className="text-2xl font-bold">API Generator</h1>
-        <ChangeTheme /></nav>
-      <form action="" className="flex flex-col gap-4 min-w-[350px] md:min-w-[700px] max-w-[800px]">
-        <Textarea placeholder="Enter your prisma schema" className="w-full" rows={10} />
+        <ChangeTheme />
+      </nav>
+      <form
+        action=""
+        className="flex flex-col gap-4 min-w-[350px] md:min-w-[700px] max-w-[800px]"
+      >
+        <Textarea
+          placeholder="Enter your prisma schema"
+          className="w-full"
+          rows={10}
+        />
 
         {/* API Methods */}
         <div className="flex flex-row gap-2">
@@ -80,5 +86,5 @@ export default function Home() {
         <Button>Submit</Button>
       </form>
     </div>
-  )
+  );
 }
