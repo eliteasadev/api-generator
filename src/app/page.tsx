@@ -1,30 +1,57 @@
+"use client";
 import { ChangeTheme } from "@/components";
-import { Button, Checkbox, Textarea } from "@/components/ui";
-
-const api_methods = [
-  {
-    name: "GET",
-    id: "checkgetmethod",
-    description: "Generate GET method",
-  },
-  {
-    name: "POST",
-    id: "checkpostmethod",
-    description: "Generate POST method",
-  },
-  {
-    name: "PUT",
-    id: "checkputmethod",
-    description: "Generate PUT method",
-  },
-  {
-    name: "DELETE",
-    id: "checkdeletemethod",
-    description: "Generate DELETE method",
-  },
-];
+import { Button, Checkbox, Toaster } from "@/components/ui";
+import { AlertTriangle, CheckCircle } from "@/icons";
+import { isPrismaSchema } from "@/lib";
+import Editor from "@monaco-editor/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Home() {
+  const router = useRouter();
+
+  const [schema, setSchema] = useState(`model Tag {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  food      Food[]   @relation("Food_Tags")
+}`);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isPrismaSchema(schema)) {
+      toast(
+        <div className="flex gap-2 items-center">
+          <CheckCircle />
+          <p className="text-sm">Schema is valid</p>
+        </div>,
+        {
+          action: {
+            label: "Clear schema input",
+            onClick: () => setSchema(""),
+          },
+        }
+      );
+      const schemaURL = btoa(schema);
+      router.push(`/code/${schemaURL}/`);
+    } else {
+      toast(
+        <div className="flex gap-2 items-center">
+          <AlertTriangle />
+          <p className="text-sm">Schema is invalid</p>
+        </div>,
+        {
+          action: {
+            label: "Clear schema input",
+            onClick: () => setSchema(""),
+          },
+        }
+      );
+    }
+  };
+
   return (
     <div className="p-4 flex flex-col items-center justify-center">
       <nav className="flex items-center justify-between mb-4 w-full">
@@ -35,19 +62,27 @@ export default function Home() {
         action=""
         className="flex flex-col gap-4 min-w-[350px] md:min-w-[700px] max-w-[800px]"
       >
-        <Textarea
-          placeholder="Enter your prisma schema"
-          className="w-full"
-          rows={10}
+        <Toaster />
+        <Editor
+          height={400}
+          defaultLanguage="prisma"
+          defaultValue={schema}
+          onChange={(value) => setSchema(value ?? "")}
+          theme="vs-dark"
+          options={{
+            tabSize: 2,
+            fontFamily: "Cascadia Code, Fira Code, monospace",
+            fontSize: 14,
+            fontLigatures: true,
+          }}
         />
-
         {/* API Methods */}
         <div className="flex flex-row gap-2">
           <div className="flex space-x-2 items-center">
             <Checkbox id="checkgetmethod" />
             <label
               htmlFor="checkgetmethod"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-emerald-600 dark:text-emerald-300"
             >
               GET
             </label>
@@ -83,7 +118,7 @@ export default function Home() {
             </label>
           </div>
         </div>
-        <Button>Submit</Button>
+        <Button onClick={handleSubmit as any}>Submit</Button>
       </form>
     </div>
   );
