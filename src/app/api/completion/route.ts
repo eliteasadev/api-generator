@@ -36,3 +36,25 @@ export async function POST(req: Request) {
 
   return result.toDataStreamResponse();
 }
+
+
+
+/* import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  const { prompt }: { prompt: string } = await req.json();
+
+  const result = await streamText({
+    model: openai('gpt-3.5-turbo'),
+    prompt,
+    temperature: 0.75,
+    maxTokens: 1000,
+    frequencyPenalty: 1,
+  });
+
+  return result.toDataStreamResponse(); */
+/* } */
