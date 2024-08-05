@@ -1,3 +1,4 @@
+export * from "./alert-circle";
 export * from "./alert-triangle";
 export * from "./check-circle";
 export * from "./clipboard";
