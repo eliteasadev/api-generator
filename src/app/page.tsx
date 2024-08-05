@@ -1,73 +1,54 @@
 "use client";
-import { ChangeTheme } from "@/components";
-import { Button, Checkbox, Toaster } from "@/components/ui";
-import { AlertTriangle, CheckCircle } from "@/icons";
-import { isPrismaSchema } from "@/lib";
-import Editor from "@monaco-editor/react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useEffect } from "react";
+
+import { useCompletion } from "ai/react";
+
+import { Editor } from "@monaco-editor/react";
+
+import { CodeBlock, MethodsSelected, NavBar } from "@/components";
+import { Button } from "@/components/ui";
+import { Clipboard, CloudCode } from "@/icons";
+import { schema } from "@/lib";
+import { useStore } from "@/store/methods";
 
 export default function Home() {
-  const router = useRouter();
+  const { methods } = useStore((state) => ({
+    methods: state.methods,
+  }));
 
-  const [schema, setSchema] = useState(`model Tag {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  food      Food[]   @relation("Food_Tags")
-}`);
+  const { completion, input, setInput, handleSubmit, isLoading } =
+    useCompletion({
+      api: "/api/completion",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        methods: methods,
+      },
+    });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isPrismaSchema(schema)) {
-      toast(
-        <div className="flex gap-2 items-center">
-          <CheckCircle />
-          <p className="text-sm">Schema is valid</p>
-        </div>,
-        {
-          action: {
-            label: "Clear schema input",
-            onClick: () => setSchema(""),
-          },
-        }
-      );
-      const schemaURL = btoa(schema);
-      router.push(`/code/${schemaURL}/`);
-    } else {
-      toast(
-        <div className="flex gap-2 items-center">
-          <AlertTriangle />
-          <p className="text-sm">Schema is invalid</p>
-        </div>,
-        {
-          action: {
-            label: "Clear schema input",
-            onClick: () => setSchema(""),
-          },
-        }
-      );
-    }
+  const copyToClipboard = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(completion);
   };
 
+  useEffect(() => {
+    setInput(schema);
+  }, []);
+
   return (
-    <div className="p-4 flex flex-col items-center justify-center">
-      <nav className="flex items-center justify-between mb-4 w-full">
-        <h1 className="text-2xl font-bold">API Generator</h1>
-        <ChangeTheme />
-      </nav>
-      <form
-        action=""
-        className="flex flex-col gap-4 min-w-[350px] md:min-w-[700px] max-w-[800px]"
-      >
-        <Toaster />
+    <div className="p-4 ">
+      {/* NavBar */}
+      <NavBar />
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        {/* Editor */}
         <Editor
-          height={400}
+          height={280}
           defaultLanguage="prisma"
-          defaultValue={schema}
-          onChange={(value) => setSchema(value ?? "")}
+          value={input}
+          onChange={(value) => setInput(value || "")}
           theme="vs-dark"
           options={{
             tabSize: 2,
@@ -76,49 +57,27 @@ export default function Home() {
             fontLigatures: true,
           }}
         />
-        {/* API Methods */}
-        <div className="flex flex-row gap-2">
-          <div className="flex space-x-2 items-center">
-            <Checkbox id="checkgetmethod" />
-            <label
-              htmlFor="checkgetmethod"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-emerald-600 dark:text-emerald-300"
-            >
-              GET
-            </label>
-          </div>
-
-          <div className="flex space-x-2 items-center">
-            <Checkbox id="checkpostmethod" />
-            <label
-              htmlFor="checkpostmethod"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 "
-            >
-              POST
-            </label>
-          </div>
-
-          <div className="flex space-x-2 items-center">
-            <Checkbox id="checkputmethod" />
-            <label
-              htmlFor="checkputmethod"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 "
-            >
-              PUT
-            </label>
-          </div>
-
-          <div className="flex space-x-2 items-center">
-            <Checkbox id="checkdeletemethod" />
-            <label
-              htmlFor="checkdeletemethod"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 "
-            >
-              DELETE
-            </label>
-          </div>
+        {/* Methods */}
+        <div className="flex items-center gap-4">
+          <MethodsSelected />
+          <span>
+            Nota: Si no se selecciona ninguna opción, se generarán todos los
+            métodos disponibles.
+          </span>
         </div>
-        <Button onClick={handleSubmit as any}>Submit</Button>
+        {/* Buttons */}
+        <div className="grid md:grid-cols-2 gap-2">
+          <Button type="submit" disabled={!!completion}>
+            <CloudCode />
+            <span className="ml-2">Generar</span>
+          </Button>
+          <Button disabled={isLoading || !completion} onClick={copyToClipboard}>
+            <Clipboard />
+            <span className="ml-2">Copiar código</span>
+          </Button>
+        </div>
+        {/* Code */}
+        <CodeBlock codeString={completion} />
       </form>
     </div>
   );
