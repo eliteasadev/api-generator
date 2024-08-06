@@ -112,12 +112,14 @@ export default function Home() {
           }}
         />
         {/* Methods */}
-        <div className="flex items-center gap-4">
-          <MethodsSelected />
-          <span>
+        <div className="flex flex-col md:flex-row gap-2">
+          <div className="flex items-center gap-2">
+            <MethodsSelected />
+          </div>
+          <div>
             Nota: Si no se selecciona ninguna opción, se generarán todos los
             métodos disponibles.
-          </span>
+          </div>
         </div>
         {/* Buttons */}
         <div className="grid md:grid-cols-2 gap-2">
