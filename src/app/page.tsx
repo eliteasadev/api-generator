@@ -89,8 +89,8 @@ export default function Home() {
           , utilizando el modelo de datos que hayas definido en tu proyecto.
         </p>
         <p>
-          Copia el el modelo de datos en el siguiente campo, luego haz click en
-          el botón Generar para obtener el código de API REST.
+          Copia el modelo de datos en el siguiente campo, luego haz click en el
+          botón Generar para obtener el código de API REST.
         </p>
       </div>
 
